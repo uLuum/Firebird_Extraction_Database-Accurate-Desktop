@@ -60,7 +60,7 @@ Data Profiling & Validation
 Transformation & Odoo Mapping
 ```
 
-##🔐 Authentication Investigation
+## 🔐 Authentication Investigation
 
 Salah satu bagian penting dari troubleshooting adalah memahami authentication layer pada legacy Firebird environment.
 
