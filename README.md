@@ -1,18 +1,87 @@
-# Accessing-Firebird-DB-of-Accurate-Desktop_5
-Memanfaatkan Lingkungan Colab dan Python untuk membuka akses database Firebird (.gdb) milik Accurate Desktop v5.
+# Accessing Firebird Database of Accurate Desktop V5
 
-Tujuan dari proyek ini adalah untuk mengekstraksi database Firebird berekstensi .gdb dari Accurate Desktop v5.
-Hasil ujicoba menunjukkan bahwa database Accurate Desktop v5 masih menggunakan versi 2.1 dengan ODS 11.1, dan versi ini sudah tidak didukung oleh versi Firebird terbaru.
-Karena itu, untuk mendapatkan akses ke databasenya diperlukan jenis server harus diekstraksi serta menggunakan user yang tepat.
+Prototype untuk mengakses dan mengekstraksi database Firebird (`.gdb`) dari **Accurate Desktop V5** menggunakan Python dan Google Colab sebagai bagian dari **pre-migration preparation menuju Odoo ERP**.
 
-Menggunakan lingkungan Colab, saya menginstall libncurses5/libtinfo5 secara langsung menggunakan dpkg.
-Disertai dengan penggunaan Python, Pandas, Firebird SQL, dan scripting Linux Shell untuk fungsi yang lebih kompleks.
+## 🎯 Background
 
-Tujuan dari proyek ini ialah untuk mempersiapkan diri dalam migrasi database Accurate Desktop v5 ke sistem ERP (Odoo).
-Karena tidak menggunakan data lama seutuhnya, proses ekstraksi ini sangat membantu dalam memaksimalkan proses migrasi data antar sistem karena memiliki ekosistem yang berbeda.
+Dalam proses ERP migration, data tidak selalu bisa langsung dipindahkan dari source system ke target ERP.
 
-# Informasi Lain:
-- SYSDBA tidak menggunakan password default 'masterkey' >> Password dalam mengakses Database terbuat secara dinamis saat proses instalasi server Firebird.
-- Uses SYSDBA tidak bisa digunakan untuk mengakses databases >> SYSDBA memiliki role yang sama dengan Administrator, sehingga harus menggunakan user lain yang memiliki hak akses setara.
-- Firebird masih bisa menambahkan user baru selain SYSDBA agar bisa menemukan user yang memiliki role setara SYSDBA. Setelah menemukannya, bisa memperbarui password user tersebut agar bisa mengakses database.
-- Ubah nama file (.gdb) sesuai database yang dimiliki serta user yang memiliki role setara agar bisa membuka aksesnya.
+Source database pada project ini menggunakan format Firebird `.gdb` dengan karakteristik legacy environment, sehingga modern Python environment tidak dapat langsung mengaksesnya.
+
+Daripada langsung membuat proses import, project ini berfokus pada:
+
+**Understand → Investigate → Validate → Extract → Profile → Map**
+
+Tujuannya adalah mengurangi uncertainty dan memahami technical requirements sebelum proses migrasi sebenarnya dimulai.
+
+## 🔍 What I Did
+
+- Identifikasi database metadata menggunakan Firebird tools (Local Environment: `gstat -h`)
+- Validasi **ODS 11.1 / SQL Dialect 3**
+- Compatibility testing dengan Firebird 2.1 & 2.5
+- Troubleshooting Firebird server, authentication, dan client library
+- Reconstruct compatible **Firebird 2.5.9 runtime** di Google Colab
+- Menyediakan legacy dependencies seperti `libncurses5` dan `libtinfo5`
+- Resolve dynamic linking untuk `libfbclient.so.2`
+- Menjalankan Firebird Server di environment Colab
+- Melakukan authentication & connection validation
+- Schema discovery menggunakan Firebird system tables
+- Selective data extraction menggunakan Python & Pandas
+- Data profiling sebagai persiapan cleaning dan transformation
+- Menyiapkan dasar **field mapping menuju Odoo ERP**
+
+## 🏗️ Prototype Flow
+
+```text
+Accurate Desktop V5
+        │
+        ▼
+Firebird .GDB
+        │
+        ▼
+Database & Compatibility Analysis
+        │
+        ▼
+Legacy Runtime Reconstruction
+        │
+        ▼
+Authentication & Connection Validation
+        │
+        ▼
+Schema Discovery
+        │
+        ▼
+Selective Data Extraction
+        │
+        ▼
+Data Profiling & Validation
+        │
+        ▼
+Transformation & Odoo Mapping
+```
+
+##🔐 Authentication Investigation
+
+Salah satu bagian penting dari troubleshooting adalah memahami authentication layer pada legacy Firebird environment.
+
+Beberapa hal yang divalidasi:
+- Credential yang digunakan oleh Firebird installation
+- User yang tersedia melalui Firebird Security Database
+- Authentication menggunakan `gsec`
+- Database access menggunakan `isql`
+- Application-level connection menggunakan Python/FDB
+
+Validasi dilakukan secara bertahap:
+```
+GSEC
+  ↓
+User & Authentication
+  ↓
+ISQL
+  ↓
+Database Access
+  ↓
+Python / FDB
+  ↓
+Application Access
+```
